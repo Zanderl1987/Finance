@@ -1,0 +1,40 @@
+def CCI(d,c,h,l,o,v,tf,sma):
+    typical_price = []
+    mdar = []
+    cci = []
+    
+    x = 0
+    while x < len(h):
+        tp = (h[x]+l[x]+c[x]) / 3
+        
+        typical_price.append(tp)
+        x+=1
+    SMATP = movingaverage(typical_price,sma)
+    
+    typical_price = typical_price[sma-1:]
+    
+    y = tf
+    
+    while y < len(SMATP):
+        considerationTP = typical_price[y-tf:y]
+        considerationSMATP = SMATP[y-tf:y]
+        
+        MDs = 0
+        z = 0
+        while z < len(considerationTP):
+            curMD = abs(considerationTP[z] - considerationSMATP[z])
+            MDs += curMD
+            z+=1
+        mdar.append(MDs)
+        
+        y+=1
+        
+        typical_price = typical_price[14:]
+        SMATP = SMATP[14:]
+        
+        xx = 0
+        while xx < len(SMATP):
+            ccis = (typical_price[xx]-SMATP[xx]) / (0.015 * mdar[xx])
+            cci.append(ccis)
+            xx+=1
+        return date[tf+sma-1:], cci
