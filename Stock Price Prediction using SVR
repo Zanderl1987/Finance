@@ -1,3 +1,6 @@
+
+# Note that you should not use cross validation on time series data because it introduces look ahead bias
+
 import pandas as pd
 #import pandas_datareader.data as wb
 #from pandas_datareader import data, wb
