@@ -6,6 +6,8 @@ Created on Wed Dec 23 21:05:14 2015
 @author: zanderl
 """
 
+# Note that you should not use cross validation on time series data because it introduces look ahead bias
+
 import urllib3
 from urllib3 import *
 import pandas as pd
