@@ -1,0 +1,119 @@
+
+
+
+import urllib
+import pandas as pd
+from pandas import DataFrame
+from pandas import ExcelWriter
+import pandas.io.data as web
+from pandas.io.data import Options
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from scipy import stats
+from scipy.stats import norm
+from scipy.stats import spearmanr
+import sys
+import datetime
+from Quandl import Quandl
+import os
+import time
+import matplotlib.cbook as cbook
+import html5lib
+import csv
+import urllib2
+import statsmodels.formula.api as sm
+import seaborn as sns
+import math as m
+import pylab
+import plotly.plotly as py
+from plotly.graph_objs import *
+
+#data = pd.read_csv('C:\Users\zanderl\Documents\Python Scripts\titanic_train.csv')
+data = pd.read_csv('PutCall_Ratio_Data.csv')
+data.dropna()
+#data.isnull()
+#print(data[data.notnull()])
+
+#print(data)
+
+#data.values
+#print(data)
+
+#print(data.groupby('Survived').count()['Survived'])
+#print(np.mean(data.Survived == 0))
+nat_log_adj_close = data['Adj Close']
+target = nat_log_adj_close.values
+
+
+
+numerical_features = data.get(['Index Call Volume', 'Index Put Volume', 'Total Index Option Volume', 'Prev. Day Open Interest', 'Put/Call Ratio'])
+
+#numerical_features = ([index_call_volume, index_put_volume, total_index_option_volume, prev_day_open_interest, put_call_ratio, nat_log_pc_ratio, pc_ratio_diff])
+
+features_array = numerical_features.values
+
+
+
+from sklearn.cross_validation import train_test_split
+
+features_train, features_test, target_train, target_test = train_test_split(features_array, target, test_size=0.20, random_state=0)
+features_train.shape
+features_test.shape
+target_train.shape
+target_test.shape
+
+from sklearn.linear_model import LogisticRegression
+
+logreg = LogisticRegression(C=1)
+logreg.fit(features_train, target_train)
+
+target_predicted = logreg.predict(features_test)
+
+from sklearn.metrics import accuracy_score
+
+accuracy_score(target_test, target_predicted)
+print(accuracy_score(target_test, target_predicted))
+
+
+
+feature_names = numerical_features.columns.values
+
+print(feature_names)
+print(logreg.coef_)
+
+x = np.arange(len(feature_names))
+plt.bar(x, logreg.coef_.ravel())
+_ = plt.xticks(x + 0.5, feature_names, rotation=30)
+
+
+target_predicted_proba = logreg.predict_proba(features_test)
+print(target_predicted_proba[:5])
+
+from sklearn.metrics import roc_curve
+from sklearn.metrics import auc
+
+def plot_roc_curve(target_test, target_predicted_proba):
+    fpr, tpr, thresholds = roc_curve(target_test, target_predicted_proba[:, 1])
+
+    roc_auc = auc(fpr, tpr)
+    # Plot ROC curve
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.3f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], 'k--') # Random predictions curve
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.0])
+    plt.xlabel('False Positive Rate or (1 - Specifity)')
+    plt.ylabel('True Positive Rate or (Sensitivity)')
+    plt.title('Receiver Operating Characteristic')
+    plt.legend(loc="lower right")
+
+
+plot_roc_curve(target_test, target_predicted_proba)
+
+#from sklearn.metrics import confusion_matrix
+#print(confusion_matrix(target_test, target_predicted))
+
+#from sklearn.metrics import classification_report
+
+#print(classification_report(target_test, target_predicted,
+#                            target_names=['Direction Down', 'Direction Up']))
