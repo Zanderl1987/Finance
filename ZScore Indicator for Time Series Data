@@ -1,0 +1,52 @@
+from scipy import stats
+import numpy as np
+
+threshold = 1 # z-score difference threshold
+
+# globals for batch transform decorator
+R_P = 1 # refresh period in days
+W_L = 30 # window length in days
+
+def initialize(context):
+   
+    context.stocks = [sid(8554),sid(32268)] # SPY & SH
+   
+def handle_data(context, data):
+   
+    # get dollar volumes
+    dv = get_dollar_volumes(data, context.stocks)
+    if dv is None:
+        return
+   
+    # normalize dollar volume with z-score
+    dv_z = stats.zscore(dv, axis=0, ddof=1)
+   
+    # compute z-score difference
+    end = dv_z.shape[0]-1
+    delta_z = dv_z[end,1] - dv_z[end,0]
+   
+    # plot cash
+    cash = context.portfolio.cash
+    record(cash = cash)
+   
+    # plot positions value
+    positions_value = context.portfolio.positions_value
+    record(positions_value = positions_value)
+     
+    # trade using z-score difference indicator (set global threshold above)
+    for i, stock in enumerate(context.stocks):
+       
+        shares = 0.5*cash/data[stock].price
+        long_short = (-1)**i
+       
+        if delta_z > threshold:
+            order(stock,long_short*shares)
+           
+        elif delta_z < -threshold:      
+            order(stock,-long_short*shares)
+      
+@batch_transform(refresh_period=R_P, window_length=W_L) # set globals R_P & W_L above
+def get_dollar_volumes(datapanel,sids):
+    p = datapanel['price'].as_matrix(sids)
+    v = datapanel['volume'].as_matrix(sids)
+    return np.multiply(p,v)
