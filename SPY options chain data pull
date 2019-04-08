@@ -1,0 +1,139 @@
+
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 11 10:16:02 2015
+
+@author: zanderl
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jul 30 19:15:33 2015
+
+@author: zanderl
+"""
+import os
+import pandas as pd
+import pandas.io.data as web
+from pandas.io.data import Options
+import datetime
+import sys
+import matplotlib.pyplot as plt
+import pylab
+from pylab import *
+import numpy as np
+import seaborn as sns
+sns.set_style('darkgrid')
+
+#print(sys.version)
+#print(pd.__version__)
+
+
+##### Define parameters for API pull and then pull the data #####
+start = datetime.datetime(2000, 1, 1)
+end = datetime.datetime.today()
+
+# Use for larger data pulls
+#ticker_list = ['^AEX', '^AORD']
+
+#ticker_list = web.DataReader(ticker_list, 'yahoo', start, end)
+#print(ticker_list)
+
+
+
+ticker = 'NBR'
+
+sd = web.DataReader(ticker, 'yahoo', start, end)
+#print(sd.head(30))
+
+
+# Calculate rolling volatilities from log natural returns
+sd['Log_Ret'] = np.log(sd['Close'] / sd['Close'].shift(1))
+sd['HistVol_A(23)'] = pd.rolling_std(sd['Log_Ret'], window=23) * np.sqrt(252)
+#stk_data['stock vol'] = np.exp(stk_data['Weekly Annualized Volatility'])
+sd['Annual Historical Volatility'] = pd.rolling_std(sd['Log_Ret'], window=252) * np.sqrt(252)
+sd['Natural Log Close'] = sd['Close'].apply(lambda x: np.log(x))
+
+# Plots---------------------------------
+#sd['Volume'].plot(kind='area', figsize=(16, 10), label = 'Volume')
+#sd['Annual Historical Volatility'].plot(kind='area', figsize=(16, 10), label = 'Annual Historical Volatility')
+#sd['HistVol_A(23)'].plot(kind='area', figsize=(16, 10), label = 'HistVol_A(23)')
+
+
+#Plot the above variance calculations
+#fig, ax = plt.subplots(2, 1, figsize=(13,12))
+#fig, ax = plt.subplots(figsize=(13,12))
+#ax.plot(x, sd['Adj Close'], label='Adj Close')
+#sd['Annual Historical Volatility'].plot(ax=ax[1], label='Annual Historical Volatility')
+
+#fig.tight_layout()
+
+
+
+#print(sd)
+#print(sd.describe())
+
+#Print the data for a specific date by referencing that individual date
+## print(f.ix['2010-01-04'])
+
+
+#The Options class allows the download of options data from Yahoo! Finance.
+
+#The get_all_data method downloads and caches option data
+#for all expiry months and provides a formatted DataFrame with a hierarchical index,
+#so it is easy to get to the specific option you want.
+
+
+#-----------------------------------------------------------------------------
+
+#tkr = 'FXP'
+#tkr = Options(tkr, 'yahoo')
+
+#tkr = tkr.get_all_data()
+#print(tkr)
+#tkr.to_csv('FXP_options_data_pull_081215.csv')
+#spy_oc = pd.read_csv('C:\Users\zanderl\Documents\Python Scripts\spy_options_data_pull_081115.csv')
+#-----------------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------------
+#Available Expiry Dates
+
+#aapl_e_dates = aapl.expiry_dates
+#print(aapl_e_dates)
+#-----------------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------------
+#spy_oc = spy.get_call_data(expiry=spy.expiry_dates[0])
+#spy_oc.to_csv('aapl_options_test.csv')
+#spy_oc.iloc[0:5, 0:5]
+#print(aapl_oc)
+#-----------------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------------
+## Show certain strike value for a call or put at all expiry dates ##
+#aapl_oc.loc[(100, slice(None), 'put'),:].iloc[0:5, 0:5]
+#print(aapl_oc.loc[(100, slice(None), 'put'),:].iloc[0:5, 0:5])
+
+#aapl_oc.loc[(100, slice(None),'put'), 'Vol']
+#print(aapl_oc.loc[(100, slice(None),'put'), 'Vol'])
+#-----------------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------------
+#Search for more specific requests such as expiry dates
+# If no exact expiry date available, will return closest expiry date to your search
+
+#expiry = datetime.date(2016, 1, 1)
+#aapl_c = aapl.get_call_data(expiry=expiry)
+#aapl_c.iloc[0:5:, 0:5]
+#print(aapl_c)
+#-----------------------------------------------------------------------------
+
+
+#-----------------------------------------------------------------------------
+#aapl_e_dates_list = aapl.get_near_stock_price(expiry=aapl.expiry_dates[0:3])
+#print(aapl_e_dates_list)
+#-----------------------------------------------------------------------------
