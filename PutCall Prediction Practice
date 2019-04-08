@@ -1,5 +1,5 @@
 
-
+# note that you should not use cross validation on time series data because it creates look ahead bias
 
 import urllib
 import pandas as pd
