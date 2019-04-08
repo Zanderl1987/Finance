@@ -1,0 +1,18 @@
+def difference(dataDf, period):
+    return dataDf.sub(dataDf.shift(period), fill_value=0)
+def ewm(dataDf, halflife):
+    return dataDf.ewm(halflife=halflife, ignore_na=False, min_periods=0, adjust=True).mean()
+def rsi(data, period):
+    data_upside = data.sub(data.shift(1), fill_value=0)
+    data_downside = data_upside.copy()
+    data_downside[data_upside > 0] = 0
+    data_upside[data_upside < 0] = 0
+    
+    avg_upside = data_upside.rolling(period).mean()
+    avg_downside = -data_downside.rolling(period).mean()
+    
+    rsi = 100 - (100 * avg_downside / (avg_downside +avg_upside))
+    rsi[avg_downside == 0] = 100
+    rsi[(avg_downside == 0) & (avg_upside == 0)] = 0
+    
+    return rsi
