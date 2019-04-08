@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jul 27 20:16:08 2015
+
+@author: zanderl
+"""
+
+import pandas.io.data as web
+import datetime as dt
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+
+#start, end = dt.datetime(2015, 1, 1), dt.datetime.today()
+#data = web.DataReader('TSLA', 'yahoo', start, end)
+#data['Close'].plot()
+
+start = dt.datetime(2015, 7, 1)
+end = dt.datetime.today()
+
+
+
+ticker_list = {'DIS' : 'Walt Disney Company',
+               'TWX' : 'Time Warner Inc.',
+               'CBS' : 'CBS Corporation',
+               'VIAB' : 'Viacom Inc.',
+               'DISCA' : 'Discovery Communications, Inc.',
+               'NLSN' : 'Nielsen N.V.',
+               'QVCA' : 'Liberty Interactive Corporation',
+               'LMCA' : 'Liberty Media Corporation',
+               'NWSA' : 'News Corporation',
+               'SNI' : 'Scripps Networks Interactive, Inc.',
+               'TGNA' : 'TEGNA Inc.',
+               'MSG' : 'Madison Square Garden Company',
+               'AMCX' : 'AMC Networks Inc.',
+               'TRCO' : 'Tribune Media Company',
+               'LAMR' : 'Lamar Advertising Company',
+               'LGF' : 'Lions Gate Entertainment Corp.',
+               'CNK' : 'Cinemark Holdings, Inc.',
+               'STRZA' : 'Starz',
+               'SIX' : 'Six Flags Entertainment Corporation',
+               'HSNI' : 'HSN, Inc.'}
+
+
+price_change = {}
+
+for ticker in ticker_list:
+    prices = web.DataReader(ticker, 'yahoo', start, end)
+    closing_prices = prices['Close']
+    change = 100 * (closing_prices[-1] - closing_prices[0]) / closing_prices[0]
+    name = ticker_list[ticker]
+    price_change[name] = change
+
+pc = pd.Series(price_change)
+pc.sort()
+fig, ax = plt.subplots(figsize=(14,10))
+pc.plot(kind='bar', ax=ax, title='Stock price performance of top 20 entertainment and media companies by market cap. since end of Q2 2015 (%)',alpha=0.5)
