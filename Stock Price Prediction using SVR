@@ -1,0 +1,410 @@
+import pandas as pd
+#import pandas_datareader.data as wb
+#from pandas_datareader import data, wb
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import scipy
+from scipy import stats
+from scipy.stats import norm
+from scipy.stats import spearmanr
+import sys
+import datetime
+from Quandl import Quandl
+import os
+import time
+import matplotlib.cbook as cbook
+import html5lib
+import csv
+import urllib2
+from urllib2 import *
+import statsmodels.formula.api as sm
+import seaborn as sns
+import math as m
+from math import exp
+import pylab
+#import pymc3 as pm
+import pickle
+import sklearn
+from sklearn import svm, preprocessing
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+from sklearn import cross_validation
+from sklearn import grid_search
+from sklearn.cross_validation import cross_val_score, ShuffleSplit
+from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.lda import LDA
+from sklearn.metrics import confusion_matrix
+from sklearn.qda import QDA
+from sklearn.svm import LinearSVC
+
+
+#from bokeh.plotting import figure, output_file, show
+#from collections import OrderedDict
+#from bokeh._legacy_charts import TimeSeries
+#from bokeh.io import output_notebook
+#output_notebook()
+#import plotly.plotly as py
+#from plotly.graph_objs import *
+#Plotly API Information:(username='asl4af', api_key='7ut55tktdt')
+
+sns.set_style("dark")
+#sns.set_style("darkgrid")
+#sns.set(style="darkgrid", palette="Set2")
+#sns.set(style="darkgrid", context="paper", font="monospace")
+
+mpl.style.use('ggplot')
+
+#start = datetime.datetime(2000,1,1)
+#end = datetime.datetime.today()
+#end = datetime.datetime(2016,1,11)
+
+'''
+ticker_list = [[
+'^VIX',
+'^VXN',
+'^DJU',
+'^DJA',
+'^DWCF',
+'^MID',
+'^DJT',
+'^HSI',
+'^DJI',
+'^GSPC',
+'^FTSE',
+'^NDX',
+'^IXIC',
+'^IXHC',
+'^BANK',
+'^NBI',
+'^IXCO',
+'^INDS',
+'^INSR',
+'^OFIN',
+'^IXTC',
+'^TRAN',
+'^NQGM',
+'^XAU',
+'^RUT',
+'^OEX',
+'^NYI',
+'^NY',
+'^TNX',
+'^NY',
+'^NYL',
+'^XMI',
+'^GDAXI',
+'000001.SS',
+'000300.SS',
+'^N225',
+'^TNX',
+'^AORD',
+'^FCHI',
+'^NYA',
+'^STOXX50E',
+'^N100',
+'^ATX',
+'^BFX',
+'^AEX',
+'^SSMI',
+'GD.AT',
+'^STI',
+'^GSPTSE',
+'^AXJO',
+'^NYY',
+'IBB',
+'^MCAPM',
+'^MFX',
+'^SP500TR',
+'^TYX',
+'^FTMC',
+'^N100',
+'^RMZ',
+'^BKX',
+'SPY'
+]]
+'''
+
+#def stock_data():
+#    for ticker in ticker_list:
+#        stks = wb.DataReader(ticker, 'yahoo', start, end)
+#    return stks
+
+#sd = stock_data()
+
+sd = pd.read_excel("C:\Users\zanderl\Documents\CapIQ_Price_Practice.xlsx",sheetname='IndexPriceData',index_col=0,parse_dates=True,
+                   na_values='NA')
+
+#sd = sd.fillna(method='pad',axis='minor_axis',inplace=True)
+#sd = sd.fillna(method='bfill',axis='minor_axis',inplace=True)
+
+#sd.fillna(method='pad',axis=1,inplace=True)
+#sd = sd.fillna(method='bfill',axis=1,inplace=True)
+
+
+print (sd.head(3))
+print ('-----------------------------------------')
+#df1 = pd.DataFrame(sd['Adj Close'])
+df1 = sd
+
+def dvar(d_curr,d_fut):
+    if d_fut > d_curr:
+        return 1
+    if d_fut < d_curr:
+        return -1
+    else:
+        return 0
+
+
+
+df1 = df1.apply(lambda x: np.log(x))
+
+print(df1.head(1))
+print(df1.columns)
+
+
+st ='S&P 500 Index'
+st2 = 'Dow Jones - World Index'
+st3 = 'S&P 100 European Index'
+
+df1['y_future'] = df1[st].shift(-5)
+df1['labels'] = list(map(dvar,df1[st],df1['y_future']))
+
+df1[st + ' Rolling Stdev_30'] = pd.rolling_std(df1[st],30,min_periods=15)
+df1[st + ' Rolling Hvol_30'] = pd.rolling_std(df1[st],30,min_periods=15) * np.sqrt(252)
+df1[st + ' Rolling Variance_30'] = pd.rolling_var(df1[st],30,min_periods=15)
+df1[st + ' Rolling CoVar_30 Crude Oil'] = pd.rolling_cov(df1[st],df1['Crude Oil'],30,min_periods=15)
+df1[st + ' Rolling CoVar_30 CBOE Market Volatility Index'] = pd.rolling_cov(df1[st],df1['CBOE Market Volatility Index'],30,min_periods=15)
+df1[st + ' Rolling CoVar_30 Dow Jones Industrial Average'] = pd.rolling_cov(df1[st],df1['Dow Jones Industrial Average'],30,min_periods=15)
+df1[st + ' Rolling CoVar_30 ' + st3] = pd.rolling_cov(df1[st],df1[st3],30,min_periods=15)
+
+
+df1[st + ' Rolling Stdev_60'] = pd.rolling_std(df1[st],60,min_periods=15)
+df1[st + ' Rolling Hvol_60'] = pd.rolling_std(df1[st],60,min_periods=15) * np.sqrt(252)
+df1[st + ' Rolling Variance_60'] = pd.rolling_var(df1[st],60,min_periods=15)
+df1[st + ' Rolling CoVar_60 Crude Oil'] = pd.rolling_cov(df1[st],df1['Crude Oil'],60,min_periods=15)
+df1[st + ' Rolling CoVar_60 CBOE Market Volatility Index'] = pd.rolling_cov(df1[st],df1['CBOE Market Volatility Index'],60,min_periods=15)
+df1[st + ' Rolling CoVar_60 Dow Jones Industrial Average'] = pd.rolling_cov(df1[st],df1['Dow Jones Industrial Average'],60,min_periods=15)
+
+#df1[st + ' Rolling Correl_504_^XAU'] = pd.rolling_corr(df1[st],df1['^XAU'],504,min_periods=15,pairwise=True)
+#df1[st + ' Rolling Correl_504_000001.SS'] = pd.rolling_corr(df1[st],df1['000001.SS'],504,min_periods=15,pairwise=True)
+
+df1[st2 + ' Rolling Stdev_30'] = pd.rolling_std(df1[st2],30,min_periods=15)
+df1[st2 + ' Rolling Hvol_30'] = pd.rolling_std(df1[st2],30,min_periods=15) * np.sqrt(252)
+df1[st2 + ' Rolling Variance_30'] = pd.rolling_var(df1[st2],30,min_periods=15)
+df1[st2 + ' Rolling CoVar_30 Crude Oil'] = pd.rolling_cov(df1[st2],df1['Crude Oil'],30,min_periods=15)
+df1[st2 + ' Rolling CoVar_30 CBOE Market Volatility Index'] = pd.rolling_cov(df1[st2],df1['CBOE Market Volatility Index'],30,min_periods=15)
+df1[st2 + ' Rolling CoVar_30 Dow Jones Industrial Average'] = pd.rolling_cov(df1[st2],df1['Dow Jones Industrial Average'],30,min_periods=15)
+
+df1['Weekday'] = df1.index.dayofweek
+df1['Day of year'] = df1.index.dayofyear
+df1['Days_in_month'] = df1.index.days_in_month
+df1['Month'] = df1.index.month
+df1['Week of year'] = df1.index.weekofyear
+df1['Quarter'] = df1.index.quarter
+df1['Year'] = df1.index.year
+
+#print(df1['Weekday'])
+
+df1.dropna(inplace=True)
+
+#print(df1)
+
+#sns.jointplot(st,'y_future',df1,kind='reg',size=8)
+#sns.jointplot(st,st2,df1,kind='reg',size=8)
+#df1['^HSI'].plot(legend=True)
+#df1['y_future'].plot(legend=True)
+#df1['Hvol_30'].plot(legend=True,secondary_y=True)
+#print(df1.columns)
+
+
+X = pd.DataFrame(df1, index=df1.index)
+y = pd.DataFrame(df1, index=df1.index)
+
+X = X.drop(['y_future', 'labels'],axis=1)
+y = df1['labels']
+#print pd.isnull(df1)
+#print pd.isnull(df1).sum()
+X_cols = X.columns.tolist()
+#y = np.array(df1['labels'])
+#X = np.array(df1.drop([st,'y_future','labels'],axis=1))
+
+X = preprocessing.scale(X)
+
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X,y, test_size=0.50)
+
+n_samples, n_features = X.shape
+print("n_samples=%d" % n_samples)
+print("n_features=%d" % n_features)
+
+clf = svm.SVC(C=500,kernel='rbf',probability=True,gamma=0.60)
+cv = ShuffleSplit(n_samples,n_iter=10,test_size=.50,random_state=50)
+svm_r = svm.SVR(C=500,kernel='linear',gamma=0.60)
+
+#C=1e3
+
+for cv_index, (train, test) in enumerate(cv):
+    print("# Cross Validation Iteration #%d" % cv_index)
+    print("train indices: {0}...".format(train[:10]))
+    print("test indices: {0}...".format(test[:10]))
+
+    svr = svm.SVR(kernel='rbf',C=500, gamma=0.60).fit(X[train],y[train])
+    print("train score: {0:.3f}, test score: {1:.3f}\n".format(svr.score(X[train], y[train]),
+          svr.score(X[test], y[test])))
+
+
+test_scores = cross_val_score(svr, X, y, cv=cv, n_jobs=1)
+
+from scipy.stats import sem
+
+def mean_score(scores):
+    """Print the empirical mean score and standard error of the mean."""
+    return ("Mean score: {0:.3f} (+/-{1:.3f})").format(np.mean(scores), sem(scores))
+
+
+
+Lr = LogisticRegression()
+clf.fit(X_train,y_train)
+svm_r.fit(X_train,y_train)
+#Lr.fit(X_train,y_train)
+
+svm_target_predicted = clf.predict(X_test)
+svm_accuracy = accuracy_score(y_test,svm_target_predicted)
+print('SVC Accuracy')
+print(svm_accuracy)
+
+#svm_r_target_predicted = svm_r.predict(X_test)
+#svm_r_accuracy = accuracy_score(y_test,svm_r_target_predicted)
+#print(svm_r_accuracy)
+
+
+
+print ('-----------------------------------------')
+#clf.predict(X_test)
+print ('-----------------------------------------')
+#clf.get_params(deep=True)
+print ('-----------------------------------------')
+
+#print (clf.predict(X_test))
+#print (clf.get_params(deep=True))
+print ('-----------------------------------------')
+print ('               RESULTS')
+print ('SYMBOL:', st)
+print ('-----------------------------------------')
+print ("SVC Score")
+print (clf.score(X_test, y_test))
+print ('-----------------------------------------')
+print ("SVR Score")
+print (svm_r.score(X_test, y_test))
+print (svr.score(X_test, y_test))
+print ('-----------------------------------------')
+#print ("Logistic Regression Score")
+#print (Lr.score(X_test, y_test))
+#print ('-----------------------------------------')
+#print (svm_target_predicted[-6:])
+#svm_target_predicted_proba = (clf.predict_proba(X_test))
+#print (svm_target_predicted_proba[-6:])
+#print ('-----------------------------------------')
+print (test_scores)
+print (mean_score(test_scores))
+
+
+
+svr_predicted_values = svr.predict(X_test)
+#print (svr_predicted_values[-1:])
+
+lenval = len(svr_predicted_values) * -1
+y_actual = y[lenval:]
+results_df = pd.DataFrame(y_actual, index=y_actual.index)
+results_df['y_pred'] = svr_predicted_values
+
+
+def  prediction_labels(pred_data):
+    if pred_data > 0:
+        return 1
+    if pred_data < 0:
+        return -1
+    else:
+        return 0
+
+
+results_df['y_pred_labels'] = list(map(prediction_labels,results_df['y_pred']))
+
+svc_predict_values = clf.predict(X_test)
+lenval_svc = len(svc_predict_values) * -1
+y_actual_svc = y[lenval_svc:]
+results_clf_df = pd.DataFrame(y_actual_svc,index=y_actual_svc.index)
+results_clf_df['y_pred_svc'] = svc_predict_values
+
+
+cm_r = confusion_matrix(results_df['labels'],results_df['y_pred_labels'])
+print ('-----Confusion Matrix: Regression-----')
+print(cm_r)
+
+cm_svc = confusion_matrix(results_clf_df['labels'],results_clf_df['y_pred_svc'])
+print ('-----Confusion Matrix: Classification-----')
+print (cm_svc)
+
+def directional_accuracy(y_a,y_p):
+    if y_a == y_p:
+        return 1
+    else:
+        return 0
+
+d_acc = list(map(directional_accuracy,results_df['labels'],results_df['y_pred_labels']))
+
+#print(d_acc)
+
+pred_correct = d_acc.count(1)
+pred_incorrect = d_acc.count(0)
+pred_total_samples = (pred_correct + pred_incorrect)
+
+print ('          ')
+print ('----------')
+print(pred_total_samples)
+
+print(pred_correct)
+print(pred_incorrect)
+
+#directional_prediction_accuracy = float((pred_correct / pred_total_samples) * 100)
+#print(directional_prediction_accuracy)
+#print((pred_correct / pred_total_samples) * 100)
+#print((pred_correct - pred_incorrect) / pred_total_samples)
+
+
+
+X_df = pd.DataFrame(X, index=df1.index,columns=X_cols)
+
+svm_r_coefficients = svm_r.coef_
+#print(svm_r_coefficients.shape)
+svm_r_coef_df = pd.DataFrame(svm_r_coefficients,columns=X_df.columns)
+
+
+
+'''
+plot_dims = (36,24)
+fig, ax = plt.subplots(figsize=plot_dims)
+sns.barplot(svm_r_coef_df,orient='h')
+plt.show()
+'''
+
+sns.distplot(test_scores, hist=True,kde=True)
+
+#clf.
+#print(results_clf_df['decision_function'])
+#results_clf_df.to_csv('decision_function.csv')
+
+
+#predictions_df = pd.DataFrame(svr_predicted_values,columns=['PredictedPrices'])
+#predictions_df = predictions_df.apply(lambda x: np.clip(x,-1,1))
+#predictions_df['ActualPrices'] = df1[st]
+#predictions_df['TargetValues'] = y_test
+#print (predictions_df)
+
+#predictions_df.plot(kind='bar',legend=True,figsize=(16,12))
+#print (predictions_df.corr())
+
+#print(results_clf_df)
+#results_clf_df.to_csv('SVC_results_exports.csv')
