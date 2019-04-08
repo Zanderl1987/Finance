@@ -1,0 +1,117 @@
+
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Sep 04 17:54:40 2015
+
+@author: zanderl
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Sep 03 18:08:30 2015
+
+@author: zanderl
+"""
+import urllib
+import pandas as pd
+from pandas import DataFrame
+from pandas import ExcelWriter
+import pandas.io.data as web
+from pandas.io.data import Options
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from scipy import stats
+from scipy.stats import norm
+from scipy.stats import spearmanr
+import sys
+import datetime
+from Quandl import Quandl
+import os
+import time
+import matplotlib.cbook as cbook
+import html5lib
+import csv
+import urllib2
+import statsmodels.formula.api as sm
+import seaborn as sns
+import math as m
+import pylab
+import plotly.plotly as py
+from plotly.graph_objs import *
+
+
+#sns.set_style("darkgrid")
+#sns.set(style="darkgrid", palette="Set2")
+sns.set(style="darkgrid", context="paper", font="monospace")
+
+path = pd.read_csv('C:\Users\zanderl\Documents\Equity_CDS_Comparison.csv', parse_dates = 'Date', index_col = 'Date')
+
+ds = path
+#print(ds.head())
+#ds.dropna()
+
+for col in [['AKS-US PRICECLOSE'], ['AKS CDS.MIDPRICE.SEN.5.00.QUOTESPREAD']]:
+    plt.hist(ds[col], normed=True, alpha=0.5)
+
+
+'''
+#Plot Closing price
+cds_data['BTU_Sr_CDS'].plot(figsize=(16, 12))
+cds_data['BTU_Close'].plot(figsize=(16, 12))
+
+
+#Create first difference to attempt to make data stationary
+cds_data['CDS First Difference'] = cds_data['BTU_Sr_CDS'] - cds_data['BTU_Sr_CDS'].shift()
+cds_data['Close First Difference'] = cds_data['BTU_Close'] - cds_data['BTU_Close'].shift()
+#cds_data['CDS First Difference'].plot(figsize=(16, 12))
+#cds_data['Close First Difference'].plot(figsize=(16, 12))
+
+#Apply log transform to the data to fix issues with data exponentially
+#increasing over time which makes it difficult to see
+#variations in earlier observations
+
+
+cds_data['CDS Natural Log'] = cds_data['BTU_Sr_CDS'].apply(lambda x: np.log(x))
+cds_data['Close Natural Log'] = cds_data['BTU_Close'].apply(lambda x: np.log(x))
+#cds_data['CDS Natural Log'].plot(figsize=(16, 12))
+#cds_data['Close Natural Log'].plot(figsize=(16, 12))
+#cds_data[['CDS Natural Log', 'Close Natural Log']].plot(figsize=(16, 12))
+
+#Variance comparison w/ original series
+cds_data['CDS Original Variance'] = pd.rolling_var(cds_data['BTU_Sr_CDS'], 30, min_periods=None, freq=None, center=True)
+cds_data['CDS Log Variance'] = pd.rolling_var(cds_data['CDS Natural Log'], 30, min_periods=None, freq=None, center=True)
+
+cds_data['Close Original Variance'] = pd.rolling_var(cds_data['BTU_Close'], 30, min_periods=None, freq=None, center=True)
+cds_data['Close Log Variance'] = pd.rolling_var(cds_data['Close Natural Log'], 30, min_periods=None, freq=None, center=True)
+
+#Plot the above variance calculations
+#fig, ax = plt.subplots(2, 1, figsize=(13,12))
+#stock_data['Original Variance'].plot(ax=ax[0], title='Original Variance')
+#stock_data['Log Variance'].plot(ax=ax[1], title='Log Variance')
+#fig.tight_layout()
+
+cds_data['CDS Logged First Difference'] = cds_data['CDS Natural Log'] - cds_data['CDS Natural Log'].shift()
+#cds_data['CDS Logged First Difference'].plot(figsize=(16, 12))
+
+cds_data['Close Logged First Difference'] = cds_data['Close Natural Log'] - cds_data['Close Natural Log'].shift()
+#cds_data['Close Logged First Difference'].plot(figsize=(16, 12))
+
+#Create lagged variables
+cds_data['CDS Lag 1'] = cds_data['CDS Logged First Difference'].shift()
+cds_data['CDS Lag 2'] = cds_data['CDS Logged First Difference'].shift(2)
+cds_data['CDS Lag 5'] = cds_data['CDS Logged First Difference'].shift(5)
+cds_data['Close Lag 1'] = cds_data['Close Logged First Difference'].shift()
+cds_data['Close Lag 2'] = cds_data['Close Logged First Difference'].shift(2)
+cds_data['Close Lag 5'] = cds_data['Close Logged First Difference'].shift(5)
+
+#Plot scatter plot for comparison of distributions of lagged variables and original variables
+#sb.jointplot('CDS Logged First Difference', 'Close Logged First Difference', cds_data, kind='reg', size=13)
+sns.jointplot('CDS Natural Log', 'Close Natural Log', cds_data, kind='reg', size=13)
+#sns.kdeplot(cds_data)
+
+
+
+
+#Plot scatter plot for comparison of distributions of lagged variables and original variables
+'''
