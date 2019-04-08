@@ -1,0 +1,52 @@
+
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Aug 19 13:30:09 2015
+
+@author: zanderl
+"""
+
+import urllib
+import pandas as pd
+from pandas import DataFrame
+from pandas import ExcelWriter
+import pandas.io.data as web
+from pandas.io.data import Options
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from scipy import stats
+import sys
+import datetime
+from Quandl import Quandl
+import os
+import time
+import matplotlib.cbook as cbook
+import html5lib
+import csv
+import urllib2
+import statsmodels.formula.api as sm
+import seaborn as sns
+import math as m
+import pylab
+
+#sns.set_style("darkgrid")
+#sns.set(style="darkgrid", palette="Set2")
+sns.set(style="darkgrid", context="paper", font="monospace")
+
+ticker ='ZSPH'
+oc = Options(ticker, 'yahoo')
+ocd = oc.get_all_data()
+
+#ocd['Total Volume'] = aggregate(ocd['Vol']~ocd['Quote_Time']+ocd['Type'], ocd, FUN=sum)
+#grp = ocd.groupby('Strike').sum(ocd['Vol'])
+#ocd['Total Volume'] = ocd('Vol').agg()
+#print(ocd.groupby('Strike').sum('Vol'))
+print(str('Total Volume: ') + str(sum(ocd['Vol'])))
+print(str('Total Open Interest: ') + str(sum(ocd['Open_Int'])))
+print(ocd['Vol'].describe())
+print(ocd['Open_Int'].describe())
+print(oc.calls['Vol'])
+
+
+#print(ocd.head())
