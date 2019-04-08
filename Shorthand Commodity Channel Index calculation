@@ -1,0 +1,4 @@
+def CCI(df,h,l,c,ndays):
+    TP = ((df[h] + df[l] + df[c]) / 3)
+    CCI = ((TP - TP.rolling(window=ndays).mean()) / (0.015 * TP.rolling(ndays).std()))
+    return CCI
