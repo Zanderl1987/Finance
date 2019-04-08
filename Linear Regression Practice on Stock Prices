@@ -1,0 +1,189 @@
+
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Dec 23 21:05:14 2015
+
+@author: zanderl
+"""
+
+import urllib3
+from urllib3 import *
+import pandas as pd
+from pandas import DataFrame
+from pandas import ExcelWriter
+#import pandas_datareader.data as wb
+#from pandas_datareader import data, wb
+import pandas.io.data as wb
+from pandas.io.data import Options
+#from pandas_datareader import Options
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import scipy
+from scipy import stats
+from scipy.stats import norm
+from scipy.stats import spearmanr
+import sys
+import datetime
+from Quandl import Quandl
+import os
+import time
+import matplotlib.cbook as cbook
+import html5lib
+import csv
+import urllib2
+from urllib2 import *
+import statsmodels.formula.api as sm
+import seaborn as sns
+import math as m
+from math import exp
+import pylab
+import pymc3 as pm
+from pymc3 import *
+import pickle
+from bs4 import BeautifulSoup
+import re
+import html2text
+import nltk
+from selenium import webdriver
+import string
+import pprint
+from bokeh.plotting import figure, output_file, show
+from collections import OrderedDict
+from bokeh._legacy_charts import TimeSeries
+from bokeh.io import output_notebook
+output_notebook()
+#import plotly.plotly as py
+#from plotly.graph_objs import *
+#Plotly API Information:(username='asl4af', api_key='7ut55tktdt')
+
+sns.set_style("dark")
+#sns.set_style("darkgrid")
+#sns.set(style="darkgrid", palette="Set2")
+#sns.set(style="darkgrid", context="paper", font="monospace")
+
+
+mpl.style.use('ggplot')
+
+
+start = datetime.datetime(2014, 1, 1)
+end = datetime.datetime.today()
+
+ticker_list = [['TIF',
+'FIGY',
+'APB',
+'APC',
+'TIK',
+'TIS',
+'MAR',
+'PVBK',
+'RYAAY',
+'EDUC',
+'PRLB',
+'AIRI',
+'ZN',
+'JRIV',
+'UUU',
+'FR',
+'LULU',
+'SOMC']]
+
+#ls_key = 'Adj Close'
+
+def stock_data():
+    for ticker in ticker_list:
+        stks = wb.DataReader(ticker, 'yahoo', start, end)
+
+
+
+#        cleanData = stks.ix[ls_key]
+#        sd = pd.DataFrame(stks)
+    return stks
+
+#ticker = 'UUP'
+#stks = wb.DataReader(ticker, 'google', start, end)
+#sd = pd.DataFrame(stks)
+
+#stks.info()
+#stks.columns
+#stks.index
+
+sd = stock_data()
+
+#print sd['Adj Close']
+
+sd = sd.fillna(method='pad',axis='minor_axis',inplace=True)
+sd = sd.fillna(method='bfill',axis='minor_axis',inplace=True)
+
+#print pd.isnull(sd).sum()
+
+X = sd.minor_xs('TIF')
+y = sd.minor_xs('LULU')
+
+#print y.shape
+#print X.shape
+
+X_1_feature_names = ['Adj Close','Open','High','Low']
+
+#X_1 = X[['Adj Close','Open','High','Low']]
+
+X_1 = X[['Adj Close','Open','High','Low']]
+y_1 = y['Adj Close']
+
+#print (X_1,y_1)
+
+n_features = len(X_1.columns)
+#n_samples = len(X_1.rows)
+
+w = np.zeros(n_features)
+print w
+
+
+print features_list
+print X_1.shape
+print y_1.shape
+
+from sklearn.linear_model import ARDRegression, LinearRegression
+
+clf = ARDRegression(compute_score=True)
+clf.fit(X_1,y_1)
+
+print 'Done fitting ARDRegression'
+
+ols = LinearRegression()
+ols.fit(X_1,y_1)
+
+print 'Done Fitting LinearRegression'
+
+
+plt.figure(figsize=(6, 5))
+plt.title("Weights of the model")
+plt.plot(clf.coef_, 'b-', label="ARD estimate")
+plt.plot(ols.coef_, 'r--', label="OLS estimate")
+plt.plot(w, 'g-', label="Ground truth")
+#plt.xlabel("Features")
+plt.xlabel('features')
+plt.ylabel("Values of the weights")
+plt.legend(loc=1)
+
+
+plt.figure(figsize=(6, 5))
+plt.title("Histogram of the weights")
+plt.hist(clf.coef_, bins=n_features, log=True)
+#plt.plot(clf.coef_[relevant_features], 5 * np.ones(len(relevant_features)),
+#         'ro', label="Relevant features")
+plt.ylabel("Features")
+plt.xlabel("Values of the weights")
+plt.legend(loc=1)
+
+
+plt.figure(figsize=(6, 5))
+plt.title("Marginal log-likelihood")
+plt.plot(clf.scores_)
+plt.ylabel("Score")
+plt.xlabel("Iterations")
+plt.show()
+
+#print (clf.coef_, X_1_feature_names)
+
+#print score(X_1,y,sample_weight)
