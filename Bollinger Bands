@@ -1,0 +1,75 @@
+
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Oct 19 19:14:51 2015
+
+@author: zanderl
+"""
+
+import urllib
+import pandas as pd
+from pandas import DataFrame
+from pandas import ExcelWriter
+import pandas.io.data as web
+from pandas.io.data import Options
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from scipy import stats
+from scipy.stats import norm
+from scipy.stats import spearmanr
+import sys
+import datetime
+from Quandl import Quandl
+import os
+import time
+import matplotlib.cbook as cbook
+import html5lib
+import csv
+import urllib2
+import statsmodels.formula.api as sm
+import seaborn as sns
+import math as m
+from math import exp
+import pylab
+import plotly.plotly as py
+from plotly.graph_objs import *
+
+
+sns.set_style("dark")
+#sns.set_style("darkgrid")
+#sns.set(style="darkgrid", palette="Set2")
+#sns.set(style="darkgrid", context="paper", font="monospace")
+
+
+start = datetime.datetime(2000, 1, 1)
+end = datetime.datetime.today()
+
+ticker = 'SPY'
+
+
+stks = web.DataReader(ticker, 'yahoo', start, end)
+
+
+sd = pd.DataFrame(stks)
+
+print(sd.head(5))
+
+if __name__ == '__main__':
+
+
+        sd['20d_ma'] = pd.rolling_mean(sd['Adj Close'], window=20)
+        sd['50d_ma'] = pd.rolling_mean(sd['Adj Close'], window=50)
+        sd['Bol_upper'] = pd.rolling_mean(sd['Adj Close'], window=20) + 2* pd.rolling_std(sd['Adj Close'], 20, min_periods=20)
+        sd['Bol_lower'] = pd.rolling_mean(sd['Adj Close'], window=20) - 2* pd.rolling_std(sd['Adj Close'], 20, min_periods=20)
+        sd['Bol_BW'] = ((sd['Bol_upper'] - sd['Bol_lower'])/sd['20d_ma'])*100
+        sd['Bol_BW_200MA'] = pd.rolling_mean(sd['Bol_BW'], window=50)#cant get the 200 daa
+        sd['Bol_BW_200MA'] = sd['Bol_BW_200MA'].fillna(method='backfill')##?? ,may not be good
+        sd['20d_exma'] = pd.ewma(sd['Adj Close'], span=20)
+        sd['50d_exma'] = pd.ewma(sd['Adj Close'], span=50)
+        data_ext.all_stock_df = sd.sort('Date',ascending = False ) #revese back to original
+        print(data_ext.all_stock_df )
+        data_ext.all_stock_df.plot(x='Date', y=['Adj Close','20d_ma','50d_ma','Bol_upper','Bol_lower' ])
+        data_ext.all_stock_df.plot(x='Date', y=['Bol_BW','Bol_BW_200MA' ])
+        plt.show()
+
